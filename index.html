@@ -1,0 +1,891 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="BAUNTOSS — портфолио видеографа: киношные, динамичные, ИИ-видео, еда и видео для личного бренда.">
+<meta name="theme-color" content="#A8121B">
+<meta property="og:title" content="BAUNTOSS — портфолио">
+<meta property="og:description" content="Включи свет и открой папку с работами.">
+<meta property="og:type" content="website">
+<style>*,*::before,*::after{box-sizing:border-box}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>BAUNTOSS — портфолио</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,900;1,400;1,700&display=swap">
+<style>
+/* Layout: a top-down "camera" over a velvet table. Intro: lamp, folder drops, opens.
+   Then the folder becomes the site: one sheet of contents + one sheet per section, flipped like real pages.
+   Single dark look by design. */
+:root {
+  --shadow: #120607;
+  --bordo: #5C0A10;
+  --cine: #8B0F18;
+  --rec: #E1252F;
+  --cream: #F3E9DC;
+  --kraft: #E6D5B8;
+  --kraft-dark: #C9B391;
+  --ink: #2B1013;
+  --display: "Playfair Display", "Prata", Georgia, serif;
+  --body: "Manrope", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: var(--shadow);
+  color: var(--cream);
+  font-family: var(--body);
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+button { font: inherit; color: inherit; }
+
+/* ---------- shared table look ---------- */
+.table { position: absolute; inset: -4%; background-color: var(--bordo); background-size: 220px 220px; }
+.light, .falloff { position: absolute; inset: -4%; pointer-events: none; }
+.light {
+  background:
+    radial-gradient(ellipse 34% 30% at 50% 48%, rgba(255, 196, 150, .30), transparent 70%),
+    radial-gradient(ellipse 60% 55% at 50% 48%, rgba(225, 37, 47, .22), transparent 75%);
+  mix-blend-mode: screen;
+}
+.falloff { background: radial-gradient(ellipse 70% 62% at 50% 48%, transparent 30%, rgba(18, 6, 7, .78) 72%, var(--shadow) 100%); }
+
+/* ---------- intro scene ---------- */
+.scene { position: fixed; inset: 0; overflow: hidden; cursor: pointer; }
+.scene.is-open { cursor: default; }
+.scene:focus-visible { outline: 2px solid var(--rec); outline-offset: -6px; }
+.camera {
+  position: absolute; inset: 0; opacity: 0;
+  transform-origin: 50% 52%;
+  transition: transform 1.4s cubic-bezier(.75, 0, .2, 1);
+}
+.scene.lamp-on .camera { animation: lampOn 1.1s steps(1, end) forwards, settle .6s 1.1s ease forwards; }
+@keyframes lampOn { 0% { opacity: 0 } 12% { opacity: .7 } 18% { opacity: .15 } 30% { opacity: .9 } 36% { opacity: .45 } 52% { opacity: 1 } 100% { opacity: 1 } }
+@keyframes settle { to { opacity: 1 } }
+.scene.is-near .camera { transform: scale(1.12); }
+.scene.is-dive .camera { transform: scale(var(--dive, 1.8)); }
+.dust { position: absolute; inset: 0; pointer-events: none; }
+
+.presents {
+  position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%);
+  display: grid; justify-items: center; gap: .5rem;
+  text-align: center; pointer-events: none;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  opacity: 0; transition: opacity .9s ease;
+}
+.presents.show { opacity: 1; }
+.presents .studio { font-family: var(--display); font-weight: 900; font-size: clamp(2.6rem, 12vw, 6rem); letter-spacing: .08em; line-height: 1; color: var(--cream); text-shadow: 0 6px 30px rgba(0,0,0,.5); }
+.presents .word { font-family: var(--mono); font-size: clamp(.72rem, 2.4vw, .9rem); letter-spacing: .5em; text-transform: uppercase; color: var(--cream); opacity: .8; }
+
+.hint {
+  position: absolute; left: 0; right: 0;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 7vh);
+  display: flex; justify-content: center; align-items: center; gap: .6rem;
+  font-family: var(--mono); font-size: .74rem; letter-spacing: .28em; text-transform: uppercase;
+  pointer-events: none; opacity: 0; transition: opacity .6s ease;
+}
+.hint.show { opacity: .85; }
+.hint i, .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--rec); box-shadow: 0 0 10px var(--rec); animation: blink 1.2s steps(1) infinite; display: inline-block; }
+@keyframes blink { 50% { opacity: .15 } }
+
+/* folder */
+.drop {
+  --fw: min(62vw, 44vh, 380px);
+  position: absolute; left: 50%; top: 52%;
+  width: var(--fw); aspect-ratio: 1 / 1.32;
+  transform: translate(-50%, -50%) rotate(-5deg);
+  transform-style: preserve-3d; perspective: 1800px;
+  visibility: hidden;
+  transition: transform 1s cubic-bezier(.6, 0, .2, 1);
+}
+.drop.landed, .drop.falling { visibility: visible; }
+.drop.falling { animation: fall .95s cubic-bezier(.55, 0, .75, .45) both, bump .35s .95s ease-out both; }
+@keyframes fall {
+  from { transform: translate(-50%, -50%) scale(1.9) rotate(-22deg); opacity: 0; }
+  20% { opacity: 1; }
+  to { transform: translate(-50%, -50%) scale(1) rotate(-5deg); opacity: 1; }
+}
+@keyframes bump { from { transform: translate(-50%, -50%) scale(.975) rotate(-5deg); } to { transform: translate(-50%, -50%) scale(1) rotate(-5deg); } }
+.scene.is-near .drop { transform: translate(-50%, -50%) rotate(0deg); animation: none; }
+.cast { position: absolute; inset: 0; border-radius: 6px; background: #000; filter: blur(14px); transform: translate(10px, 18px); opacity: .7; }
+.drop.falling .cast { animation: castIn .95s cubic-bezier(.55, 0, .75, .45) both; }
+@keyframes castIn {
+  from { filter: blur(48px); transform: translate(70px, 110px) scale(1.15); opacity: 0; }
+  to { filter: blur(14px); transform: translate(10px, 18px); opacity: .7; }
+}
+.folder { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform .5s ease-out; }
+.back { position: absolute; inset: 0; background: linear-gradient(160deg, var(--kraft-dark), #B39A75); border-radius: 3px 8px 8px 3px; }
+.mini {
+  position: absolute; inset: 3.5% 4% 3.5% 3%;
+  background: repeating-linear-gradient(0deg, transparent 0 23px, rgba(43, 16, 19, .045) 23px 24px), var(--cream);
+  border-radius: 2px; box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+  color: var(--ink); padding: 9%;
+  display: grid; align-content: start; gap: calc(var(--fw) * .03);
+  font-size: calc(var(--fw) * .042);
+}
+.mini .case { font-family: var(--mono); font-size: .74em; letter-spacing: .14em; display: flex; justify-content: space-between; border-bottom: 1px solid rgba(43,16,19,.35); padding-bottom: .5em; }
+.mini h3 { margin: 0; font-family: var(--display); font-weight: 900; font-size: 1.9em; line-height: 1; color: var(--bordo); }
+.mini .who { font-family: var(--mono); font-size: .7em; letter-spacing: .2em; margin-top: -.3em; }
+.mini ol { list-style: none; margin: 0; padding: 0; display: grid; gap: .25em; }
+.mini li { display: flex; gap: .7em; align-items: baseline; border-bottom: 1px dotted rgba(43,16,19,.3); padding-bottom: .25em; }
+.mini li b { font-family: var(--mono); font-weight: 500; font-size: .75em; color: var(--cine); }
+
+.cover { position: absolute; inset: 0; transform-origin: left center; transform-style: preserve-3d; transition: transform 1.25s cubic-bezier(.65, 0, .25, 1); }
+.scene.is-open .cover { transform: rotateY(-172deg); }
+.face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 3px 8px 8px 3px; }
+.front {
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(255,255,255,.22), transparent 55%),
+    repeating-linear-gradient(90deg, rgba(0,0,0,.018) 0 2px, transparent 2px 5px),
+    linear-gradient(160deg, var(--kraft), #D9C5A2);
+  box-shadow: inset 0 0 0 1px rgba(43,16,19,.18), inset -6px 0 10px rgba(0,0,0,.08);
+  color: var(--ink); font-size: calc(var(--fw) * .042);
+  display: grid; grid-template-rows: auto 1fr auto; padding: 9% 9% 8%;
+}
+.front::before { content: ""; position: absolute; left: 5%; top: 0; bottom: 0; width: 1px; background: rgba(43,16,19,.18); }
+.front .row { display: flex; justify-content: space-between; font-family: var(--mono); font-size: .74em; letter-spacing: .16em; }
+.front .label { align-self: center; justify-self: center; text-align: center; border: 1.5px solid var(--ink); padding: 1.1em 1.3em .9em; background: rgba(243, 233, 220, .55); display: grid; gap: .4em; }
+.front .label h2 { margin: 0; font-family: var(--display); font-weight: 900; font-size: 2.05em; letter-spacing: .04em; line-height: 1; }
+.front .label em { font-family: var(--display); font-style: normal; font-weight: 900; font-size: 1.1em; letter-spacing: .18em; color: var(--bordo); }
+.front .crafts { font-family: var(--mono); font-size: .66em; letter-spacing: .08em; line-height: 1.6; text-align: center; opacity: .8; }
+.stamp { position: absolute; right: 7%; bottom: 23%; font-family: var(--mono); font-weight: 500; font-size: .74em; letter-spacing: .14em; color: var(--rec); border: 2px solid var(--rec); padding: .35em .6em; transform: rotate(-11deg); opacity: .82; mix-blend-mode: multiply; }
+.inside { transform: rotateY(180deg); background: linear-gradient(200deg, #CDB894, #B9A27D); box-shadow: inset 0 0 0 1px rgba(43,16,19,.15); }
+
+/* ---------- gate + mute ---------- */
+.gate {
+  position: fixed; inset: 0; z-index: 30;
+  display: grid; place-content: center; justify-items: center; gap: 1.4rem;
+  background: var(--shadow); border: 0; cursor: pointer;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  transition: opacity .25s ease;
+}
+.gate.gone { opacity: 0; pointer-events: none; }
+.switch { width: 64px; height: 104px; border-radius: 14px; background: linear-gradient(180deg, #2a1214, #1a0a0c); box-shadow: inset 0 0 0 1px rgba(243,233,220,.14), 0 10px 30px rgba(0,0,0,.6); display: grid; place-items: center; }
+.switch span { width: 30px; height: 56px; border-radius: 8px; background: linear-gradient(180deg, var(--cream) 0 48%, #cdbfae 52% 100%); box-shadow: 0 3px 0 #8f8172, 0 0 0 1px rgba(0,0,0,.4); position: relative; transition: transform .15s ease; }
+.switch span::after { content: ""; position: absolute; left: 50%; bottom: 9px; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: var(--rec); box-shadow: 0 0 8px var(--rec); animation: blink 1.6s steps(1) infinite; }
+.gate:active .switch span, .gate.gone .switch span { transform: scaleY(-1); }
+.gate .cta { font-family: var(--mono); font-size: .78rem; letter-spacing: .3em; text-transform: uppercase; }
+.gate .note { font-family: var(--display); font-style: italic; font-size: 1rem; color: var(--kraft); opacity: .75; }
+.gate:focus-visible { outline: 2px solid var(--rec); outline-offset: -8px; }
+.mute {
+  position: fixed; z-index: 25;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  right: max(12px, env(safe-area-inset-right, 0px));
+  font: 500 .66rem/1 var(--mono); letter-spacing: .2em; text-transform: uppercase;
+  background: rgba(18,6,7,.6); border: 1px solid rgba(243,233,220,.25);
+  padding: .6rem .75rem; cursor: pointer;
+}
+
+/* ---------- reader: the folder as the site ---------- */
+.reader { position: fixed; inset: 0; overflow: hidden; opacity: 0; visibility: hidden; transition: opacity .7s ease; }
+.reader.show { opacity: 1; visibility: visible; }
+.book {
+  position: absolute; left: 50%; top: 50%;
+  width: min(92vw, 620px);
+  height: min(86vh, 900px); height: min(86svh, 900px);
+  transform: translate(-50%, -50%);
+}
+.book::before { /* folder board under the sheets */
+  content: ""; position: absolute; inset: -1.6% -2.2% -1.6% -1.2%;
+  background: linear-gradient(160deg, var(--kraft-dark), #A98F69);
+  border-radius: 4px 10px 10px 4px;
+  box-shadow: 14px 22px 40px rgba(0,0,0,.6);
+}
+#book { position: absolute; inset: 0; }
+/* page-flip library base styles */
+.stf__parent { position: relative; display: block; box-sizing: border-box; transform: translateZ(0); touch-action: pan-y; }
+.stf__wrapper { position: relative; width: 100%; height: 100%; box-sizing: border-box; }
+.stf__parent canvas { position: absolute; width: 100%; height: 100%; left: 0; top: 0; }
+.stf__block { position: absolute; width: 100%; height: 100%; box-sizing: border-box; perspective: 2000px; }
+.stf__item { display: none; position: absolute; transform-style: preserve-3d; }
+.stf__outerShadow, .stf__innerShadow, .stf__hardShadow, .stf__hardInnerShadow { position: absolute; left: 0; top: 0; }
+.page { background: var(--cream); }
+.no-flip .page { position: absolute; inset: 0; display: none; }
+.no-flip .page.current { display: block; }
+.paper {
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent 0 27px, rgba(43, 16, 19, .045) 27px 28px), var(--cream);
+  box-shadow: inset 10px 0 18px -12px rgba(43,16,19,.35);
+  color: var(--ink);
+  overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+  display: flex; flex-direction: column; gap: 1.1rem;
+  padding: clamp(18px, 5%, 40px) clamp(18px, 6%, 44px) clamp(14px, 4%, 30px);
+}
+.toc button *, .photo *, .navbtn * { pointer-events: none; }
+.case { font-family: var(--mono); font-size: .7rem; letter-spacing: .16em; display: flex; justify-content: space-between; gap: 1rem; border-bottom: 1px solid rgba(43,16,19,.35); padding-bottom: .6rem; }
+.paper h2 { margin: 0; font-family: var(--display); font-weight: 900; font-size: clamp(2rem, 8vw, 3.2rem); line-height: .95; color: var(--bordo); text-wrap: balance; }
+.paper .sub { margin: -.4rem 0 0; font-family: var(--mono); font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--ink); opacity: .7; }
+
+/* contents */
+.toc { list-style: none; margin: 0; padding: 0; display: grid; }
+.toc button {
+  width: 100%; display: grid; grid-template-columns: 2.4rem 1fr auto; align-items: baseline; gap: .4rem;
+  text-align: left; background: none; border: 0; border-bottom: 1px dotted rgba(43,16,19,.35);
+  padding: .9rem 0; cursor: pointer; color: var(--ink);
+}
+.toc b { font-family: var(--mono); font-weight: 500; font-size: .78rem; color: var(--cine); }
+.toc span { font-family: var(--display); font-weight: 900; font-size: clamp(1.15rem, 4.6vw, 1.5rem); line-height: 1.15; }
+.toc small { font-family: var(--mono); font-size: .68rem; letter-spacing: .08em; opacity: .65; white-space: nowrap; }
+.toc button:hover span, .toc button:focus-visible span { color: var(--rec); }
+.toc button:focus-visible { outline: 2px solid var(--rec); outline-offset: 2px; }
+.paper .foot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; gap: .8rem; font-family: var(--mono); font-size: .66rem; letter-spacing: .14em; text-transform: uppercase; opacity: .75; padding-top: .4rem; }
+.linkbtn { background: none; border: 0; padding: .5rem 0; cursor: pointer; font: inherit; letter-spacing: inherit; text-transform: inherit; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.linkbtn:focus-visible, .navbtn:focus-visible { outline: 2px solid var(--rec); outline-offset: 2px; }
+
+/* section sheets */
+.clips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.4rem 1rem; align-items: start; padding-top: .3rem; }
+.clips.one { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+.clip { display: grid; gap: .45rem; min-width: 0; width: 100%; }
+.clip.h { grid-column: 1 / -1; }
+.clips.one .clip.v { width: min(62%, 300px); }
+.photo {
+  position: relative; display: block; width: 100%; padding: 0; border: 6px solid #fbf6ee; border-bottom-width: 6px;
+  background:
+    radial-gradient(ellipse at var(--gx, 70%) 35%, rgba(225, 37, 47, .55), transparent 60%),
+    linear-gradient(135deg, #2a0a0d, var(--shadow));
+  box-shadow: 0 6px 14px rgba(43,16,19,.35), 0 1px 2px rgba(0,0,0,.3);
+  transform: rotate(var(--tilt, 0deg));
+  cursor: pointer; overflow: visible;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.clip.h .photo { aspect-ratio: 16 / 9; }
+.clip.v .photo { aspect-ratio: 9 / 16; }
+.photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo .play {
+  position: absolute; left: 50%; top: 50%; width: 54px; height: 54px; margin: -27px 0 0 -27px;
+  border-radius: 50%; background: rgba(18,6,7,.55); border: 1.5px solid rgba(243,233,220,.8);
+  display: grid; place-items: center; transition: background .2s ease, transform .2s ease;
+}
+.photo .play::before { content: ""; margin-left: 4px; border-left: 15px solid var(--cream); border-top: 9px solid transparent; border-bottom: 9px solid transparent; }
+.photo .tag { position: absolute; left: 40px; top: 8px; font-family: var(--mono); font-size: .62rem; letter-spacing: .12em; color: var(--cream); text-shadow: 0 1px 3px rgba(0,0,0,.7); display: flex; align-items: center; gap: .4rem; }
+.photo .tag .dot { width: 6px; height: 6px; animation: none; }
+.photo::after { /* paper clip */
+  content: ""; position: absolute; top: -16px; left: 18px; width: 12px; height: 40px;
+  border: 2.5px solid #8d8a86; border-radius: 8px; transform: rotate(6deg);
+  box-shadow: 1px 1px 0 rgba(255,255,255,.4);
+}
+.photo:hover, .photo:focus-visible { transform: rotate(0deg) scale(1.015); box-shadow: 0 12px 24px rgba(43,16,19,.45); }
+.photo:hover .play, .photo:focus-visible .play { background: var(--rec); transform: scale(1.08); }
+.photo:focus-visible { outline: 2px solid var(--rec); outline-offset: 4px; }
+.clip .cap { font-family: var(--mono); font-size: .66rem; letter-spacing: .1em; display: flex; justify-content: space-between; gap: .5rem; opacity: .75; }
+.pager { display: flex; align-items: center; gap: .3rem; }
+.navbtn { background: none; border: 1px solid rgba(43,16,19,.4); width: 34px; height: 34px; display: grid; place-items: center; cursor: pointer; color: var(--ink); font-size: .9rem; }
+.navbtn:disabled { opacity: .3; cursor: default; }
+.pager span { min-width: 4.2em; text-align: center; font-variant-numeric: tabular-nums; }
+
+/* wide screens: the open folder lies landscape, clips sit side by side */
+@media (min-width: 900px) and (min-aspect-ratio: 1/1) {
+  .book { width: min(84vw, 1120px); }
+  .clips, .clips.one { display: flex; flex-wrap: wrap; justify-content: center; gap: 2.4rem 2rem; }
+  .clip.v { width: min(24%, 270px); }
+  .clip.h { width: calc(50% - 1rem); }
+  .clips.one .clip.h { width: min(100%, 720px); }
+  .clips.one .clip.v { width: min(30%, 300px); }
+  .toc { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 2.4rem; }
+}
+
+/* ---------- player ---------- */
+.player {
+  position: fixed; inset: 0; z-index: 27;
+  background: rgba(18, 6, 7, .94);
+  display: grid; place-content: center; justify-items: center; gap: 14px;
+  padding-block: calc(env(safe-area-inset-top, 0px) + 16px) calc(env(safe-area-inset-bottom, 0px) + 16px);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  opacity: 0; visibility: hidden; transition: opacity .35s ease, visibility 0s .35s;
+}
+.player.show { opacity: 1; visibility: visible; transition: opacity .35s ease; }
+.frame { position: relative; background: #000; box-shadow: 0 30px 80px rgba(0,0,0,.7); transform: scale(.94); transition: transform .45s cubic-bezier(.2, .8, .2, 1); }
+.player.show .frame { transform: none; }
+.frame.h { width: min(92vw, calc(78vh * 16 / 9)); aspect-ratio: 16 / 9; }
+.frame.v { height: min(78vh, calc(92vw * 16 / 9)); aspect-ratio: 9 / 16; }
+.frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.blocked { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 1rem; text-align: center; padding: 1.2rem; font-size: .9rem; line-height: 1.5; color: var(--cream); }
+.blocked p { margin: 0; max-width: 34ch; opacity: .8; }
+.closebtn { font: 500 .74rem/1 var(--mono); letter-spacing: .2em; text-transform: uppercase; background: transparent; border: 1px solid rgba(243,233,220,.35); padding: .85rem 1.2rem; cursor: pointer; }
+.closebtn:hover { border-color: var(--cream); }
+
+.closebtn:focus-visible, .mute:focus-visible { outline: 2px solid var(--rec); outline-offset: 3px; }
+
+
+/* =========================================================
+   POSTER LOOK: retro print. Red stock with soft wave shapes,
+   fat wide cream type with halftone dots, cut-out stickers.
+   ========================================================= */
+:root {
+  --poster: #A8121B;
+  --paper: #F1E4CF;
+  --fat: "Dela Gothic One", "Unbounded", "Arial Black", sans-serif;
+  --grot: "Manrope", system-ui, sans-serif;
+}
+.table { background-color: var(--poster); background-image: var(--tex); background-size: cover; background-position: center; }
+.light { background: radial-gradient(ellipse 50% 42% at 50% 46%, rgba(255, 210, 180, .14), transparent 70%); mix-blend-mode: screen; }
+.falloff { background: radial-gradient(ellipse 85% 75% at 50% 48%, transparent 50%, rgba(18, 6, 7, .45) 88%, rgba(18, 6, 7, .7) 100%); }
+body::after { /* print grain over everything */
+  content: ""; position: fixed; inset: 0; z-index: 40; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: .28; mix-blend-mode: overlay;
+}
+.halftone, .paper h2, .mega {
+  color: var(--paper);
+  background: radial-gradient(circle, rgba(140, 30, 30, .30) 0 1px, transparent 1.5px) 0 0 / 5px 5px, var(--paper);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.kicker { font: 800 clamp(.68rem, 2.6vw, .86rem)/1 var(--grot); letter-spacing: .08em; text-transform: uppercase; color: var(--paper); }
+
+/* intro title: stacked, poster size, folder lands over it */
+.presents { top: calc(env(safe-area-inset-top, 0px) + 7vh); transform: none; gap: .9rem; }
+.presents .mega { font-family: var(--fat); font-weight: 400; font-size: min(25vw, 19vh, 230px); line-height: .84; letter-spacing: -.01em; text-transform: uppercase; }
+.hint { font: 800 .78rem/1 var(--grot); letter-spacing: .14em; color: var(--paper); }
+.hint.show { opacity: 1; }
+
+/* the folder as a cut-out sticker */
+.back, .front { box-shadow: 0 0 0 calc(var(--fw) * .03) var(--paper); }
+.front .label h2 { font-family: var(--fat); font-weight: 400; letter-spacing: 0; font-size: 1.9em; }
+.front .label em { font-family: var(--grot); font-weight: 800; letter-spacing: .3em; font-size: .9em; }
+.front .row, .front .crafts { font-family: var(--grot); font-weight: 800; }
+.cast { transform: translate(14px, 22px); }
+
+/* the sheet inside the folder (seen while it opens) */
+.mini { background: var(--poster) var(--tex) center / cover; color: var(--paper); box-shadow: none; }
+.mini .case { font-family: var(--grot); font-weight: 800; border-bottom-color: rgba(241, 228, 207, .4); }
+.mini h3 { font-family: var(--fat); font-weight: 400; font-size: 2.3em; line-height: .9; text-transform: uppercase; color: var(--paper); }
+.mini .who { font-family: var(--grot); font-weight: 800; }
+.mini li { border-bottom-color: rgba(241, 228, 207, .3); font-family: var(--fat); text-transform: uppercase; font-size: .9em; }
+.mini li b { color: var(--paper); opacity: .7; font-family: var(--grot); }
+
+/* sheets are poster prints */
+.page { background: var(--poster); }
+.paper { background: var(--poster) var(--tex) center / cover; color: var(--paper); box-shadow: inset 12px 0 22px -14px rgba(0, 0, 0, .5); gap: 1.2rem; }
+.case { font: 800 .74rem/1.2 var(--grot); letter-spacing: .1em; text-transform: uppercase; border-bottom: 0; padding-bottom: 0; justify-content: center; gap: .6rem; }
+.case span + span::before { content: "•"; margin-right: .6rem; }
+.case::before, .case::after { content: "•"; }
+.paper h2 { font-family: var(--fat); font-weight: 400; text-transform: uppercase; font-size: clamp(2.5rem, 12.5vw, 5.6rem); line-height: .86; letter-spacing: -.01em; text-align: center; }
+.paper .sub { text-align: center; margin: -.2rem 0 0; font: 800 .8rem/1 var(--grot); letter-spacing: .12em; color: var(--paper); opacity: .9; }
+.toc { border-top: 1.5px solid rgba(241, 228, 207, .35); }
+.toc button { color: var(--paper); border-bottom: 1.5px solid rgba(241, 228, 207, .35); padding: 1rem 0; grid-template-columns: 2.2rem 1fr auto; transition: transform .2s ease; }
+.toc b { font: 800 .8rem/1 var(--grot); color: var(--paper); opacity: .7; }
+.toc span { font-family: var(--fat); font-weight: 400; text-transform: uppercase; font-size: clamp(1.1rem, 5.2vw, 1.9rem); line-height: 1.05; }
+.toc small { font: 800 .7rem/1 var(--grot); letter-spacing: .06em; text-transform: uppercase; }
+.toc button:hover, .toc button:focus-visible { transform: translateX(6px); }
+.toc button:hover span, .toc button:focus-visible span { color: #fff; }
+.toc button:focus-visible { outline: 2px solid var(--paper); }
+.paper .foot { font: 800 .72rem/1 var(--grot); letter-spacing: .1em; opacity: 1; }
+.linkbtn { color: var(--paper); }
+.navbtn { color: var(--paper); border: 1.5px solid rgba(241, 228, 207, .55); }
+.linkbtn:focus-visible, .navbtn:focus-visible { outline-color: var(--paper); }
+
+/* video stills as cut-out stickers */
+.photo { border: 0; border-radius: 3px; box-shadow: 0 0 0 7px var(--paper), 7px 11px 0 7px rgba(18, 6, 7, .35); }
+.photo::after { display: none; }
+.photo:hover, .photo:focus-visible { box-shadow: 0 0 0 7px var(--paper), 10px 15px 0 7px rgba(18, 6, 7, .35); }
+.photo:focus-visible { outline: 3px solid #fff; outline-offset: 10px; }
+.photo .tag { left: 10px; font: 800 .66rem/1 var(--grot); }
+.photo:hover .play, .photo:focus-visible .play { background: var(--paper); }
+.photo:hover .play::before, .photo:focus-visible .play::before { border-left-color: var(--poster); }
+.clips { gap: 2rem 1.4rem; padding: .6rem 8px 0; }
+.clip { gap: .8rem; }
+.clip .cap { font: 800 .7rem/1 var(--grot); letter-spacing: .08em; text-transform: uppercase; opacity: 1; padding-top: .3rem; }
+
+/* gate + controls in the same voice */
+.gate .cta { font: 400 clamp(1.3rem, 6vw, 2rem)/1 var(--fat); letter-spacing: 0; }
+.gate .note { font: 800 .74rem/1 var(--grot); font-style: normal; letter-spacing: .14em; text-transform: uppercase; color: var(--paper); }
+.mute, .closebtn { font-family: var(--grot); font-weight: 800; }
+
+@media (prefers-reduced-motion: reduce) {
+  .camera, .cover, .drop, .folder, .presents, .hint, .reader, .player, .frame { transition-duration: .01s !important; }
+  .drop.falling, .drop.falling .cast, .scene.lamp-on .camera { animation: none !important; }
+  .scene.lamp-on .camera { opacity: 1; }
+  .hint i, .dot, .switch span::after { animation: none; }
+}
+</style>
+
+<!-- intro -->
+<div class="scene" id="scene" role="button" tabindex="0" aria-label="Открыть папку «Портфолио»">
+  <div class="camera" id="camera">
+    <div class="table"></div>
+    <div class="light"></div>
+    <canvas class="dust" id="dust" aria-hidden="true"></canvas>
+    <div class="presents" id="presents" aria-hidden="true">
+      <span class="kicker">• портфолио видеографа •</span>
+      <span class="mega">Baun<br>toss</span>
+    </div>
+    <div class="drop" id="drop">
+      <div class="cast"></div>
+      <div class="folder" id="folder">
+        <div class="back">
+          <div class="mini">
+            <div class="case"><span>BAUNTOSS</span><span>2026</span></div>
+            <h3>Мои<br>работы</h3>
+            <div class="who">BAUNTOSS</div>
+            <ol id="miniToc"></ol>
+          </div>
+        </div>
+        <div class="cover">
+          <div class="face front">
+            <div class="row"><span>ДЕЛО</span><span>№ 001</span></div>
+            <div class="label"><h2>ПОРТФОЛИО</h2><em>BAUNTOSS</em></div>
+            <div class="crafts">СЪЁМКА · МОНТАЖ<br>ЦВЕТ · ЗВУК</div>
+            <div class="stamp">ОРИГИНАЛ</div>
+          </div>
+          <div class="face inside"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="falloff" aria-hidden="true"></div>
+  <div class="hint" id="hint"><i></i>• Нажми на папку •</div>
+</div>
+
+<!-- the folder, open: the site itself -->
+<main class="reader" id="reader" aria-label="Портфолио BAUNTOSS">
+  <div class="table"></div>
+  <div class="light"></div>
+  <div class="falloff"></div>
+  <div class="book" id="bookBox"><div id="book"></div></div>
+</main>
+
+<div class="player" id="player" role="dialog" aria-modal="true" aria-label="Видео">
+  <div class="frame h" id="frame"></div>
+  <button class="closebtn" id="closePlayer" type="button">✕ Закрыть</button>
+</div>
+
+<button class="gate" id="gate" type="button" aria-label="Включить свет и начать">
+  <span class="switch" aria-hidden="true"><span></span></span>
+  <span class="cta">Включи свет</span>
+  <span class="note">лучше со звуком</span>
+</button>
+<button class="mute" id="mute" type="button" hidden aria-pressed="false">Звук: вкл</button>
+<audio id="melody" preload="auto" src="assets/intro.mp3"></audio>
+
+<script src="vendor/page-flip.browser.js"></script>
+<script>
+/* =========================================================
+   РАЗДЕЛЫ И ВИДЕО — всё, что нужно менять, находится здесь.
+   Новое видео: добавь ссылку YouTube в нужный раздел.
+   Новый раздел: скопируй блок { title: ..., videos: [...] }.
+   Ссылки /shorts/ сами показываются вертикально (9:16).
+   Обычное видео, снятое вертикально: { url: '...', vertical: true }.
+   Подпись к видео: { url: '...', title: 'Название' }.
+   Своя обложка: { url: '...', cover: 'covers/имя-файла.jpg' } (файл кладётся в папку covers).
+   ========================================================= */
+const SECTIONS = [
+  { title: 'Киношные видео', videos: [
+    'https://youtu.be/3mKS1CFG544',
+    'https://youtu.be/j2wyOgbNoi4',
+    'https://youtu.be/Vi7FaNhvOeQ',
+  ]},
+  { title: 'Динамичные', videos: [
+    'https://youtube.com/shorts/UpAQhlhEDpY',
+    'https://youtube.com/shorts/JHqX0_Qs-NY',
+  ]},
+  { title: 'ИИ-видео', videos: [
+    'https://youtu.be/hOMsAQGa7C4',
+  ]},
+  { title: 'Еда', videos: [
+    'https://youtube.com/shorts/t1odWKYmLhY',
+  ]},
+  { title: 'Видео для личного бренда', videos: [
+    'https://youtube.com/shorts/hHNQyE0GNmE',
+    'https://youtube.com/shorts/qWXYsVOlVaw',
+  ]},
+];
+
+(() => {
+  const $ = id => document.getElementById(id);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const pad = n => String(n).padStart(2, '0');
+  const plural = n => n % 10 === 1 && n % 100 !== 11 ? 'видео' : 'видео';
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  /* ---- normalise the list ---- */
+  const sections = SECTIONS.map(s => ({
+    title: s.title,
+    videos: s.videos.map(v => {
+      const o = typeof v === 'string' ? { url: v } : v;
+      const m = o.url.match(/(?:youtu\.be\/|shorts\/|[?&]v=|embed\/)([\w-]{11})/);
+      return { id: m ? m[1] : '', url: o.url, title: o.title || '', cover: o.cover || '', vertical: o.vertical ?? /\/shorts\//.test(o.url) };
+    }).filter(v => v.id)
+  }));
+
+  /* ---- poster stock: red paper with soft wave shapes and grain ---- */
+  (function posterStock() {
+    const W = 900, H = 1300, c = document.createElement('canvas'); c.width = W; c.height = H;
+    const x = c.getContext('2d');
+    x.fillStyle = '#A8121B'; x.fillRect(0, 0, W, H);
+    const blob = (cx, cy, r, fill, blur) => {
+      const n = 9, pts = [];
+      for (let k = 0; k < n; k++) { const a = k / n * Math.PI * 2, rr = r * (.7 + Math.random() * .55); pts.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr * 1.2]); }
+      x.save(); x.filter = `blur(${blur}px)`; x.fillStyle = fill; x.beginPath();
+      const mid = (p, q) => [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
+      let m = mid(pts[n - 1], pts[0]); x.moveTo(m[0], m[1]);
+      for (let k = 0; k < n; k++) { const p = pts[k], q = pts[(k + 1) % n], mm = mid(p, q); x.quadraticCurveTo(p[0], p[1], mm[0], mm[1]); }
+      x.fill(); x.restore();
+    };
+    for (let k = 0; k < 7; k++) {
+      const cx = Math.random() * W, cy = Math.random() * H, r = 220 + Math.random() * 320;
+      blob(cx, cy, r, 'rgba(120, 8, 16, .35)', 18);       // darker wave
+      blob(cx + 30, cy - 20, r * .82, 'rgba(178, 22, 32, .45)', 10); // lighter body inside it
+    }
+    const img = x.getImageData(0, 0, W, H), d = img.data;
+    for (let i = 0; i < d.length; i += 4) { const n = (Math.random() - .5) * 18; d[i] += n; d[i + 1] += n * .5; d[i + 2] += n * .5; }
+    x.putImageData(img, 0, 0);
+    document.documentElement.style.setProperty('--tex', `url(${c.toDataURL('image/jpeg', .85)})`);
+  })();
+
+  /* ---- build the folder sheets ---- */
+  $('miniToc').innerHTML = sections.map((s, i) => `<li><b>${pad(i + 1)}</b>${esc(s.title)}</li>`).join('');
+  const book = $('book');
+  const total = sections.length;
+  const sheetsHtml = [];
+  sheetsHtml.push(`
+    <div class="page" data-i="0"><div class="paper">
+      <div class="case"><span>BAUNTOSS</span><span>видеограф</span></div>
+      <h2>Мои<br>работы</h2>
+      <ol class="toc">${sections.map((s, i) => `
+        <li><button type="button" data-go="${i + 1}"><b>${pad(i + 1)}</b><span>${esc(s.title)}</span><small>${s.videos.length} ${plural(s.videos.length)}</small></button></li>`).join('')}
+      </ol>
+      <div class="foot"><span>Выбери раздел</span><button class="linkbtn" type="button" data-replay>↺ Интро</button></div>
+    </div></div>`);
+  sections.forEach((s, i) => {
+    const allV = s.videos.every(v => v.vertical);
+    const one = s.videos.length === 1;
+    sheetsHtml.push(`
+    <div class="page" data-i="${i + 1}"><div class="paper">
+      <div class="case"><span>Раздел ${pad(i + 1)}</span><span>BAUNTOSS</span></div>
+      <h2>${esc(s.title)}</h2>
+      <p class="sub">${s.videos.length} ${plural(s.videos.length)}</p>
+      <div class="clips${one ? ' one' : ''}">${s.videos.map((v, k) => `
+        <figure class="clip ${v.vertical ? 'v' : 'h'}" style="margin:0">
+          <button class="photo" type="button" data-s="${i}" data-v="${k}" aria-label="Смотреть: ${esc(v.title || s.title + ', видео ' + (k + 1))}"
+            style="--tilt:${(k % 2 ? 1 : -1) * (0.8 + (k % 3) * .4)}deg; --gx:${30 + (k * 23) % 50}%">
+            <img src="${esc(v.cover || `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`)}" alt="" loading="lazy" onerror="this.remove()">
+            <span class="tag"><i class="dot"></i>${pad(i + 1)}·${pad(k + 1)}</span>
+            <span class="play" aria-hidden="true"></span>
+          </button>
+          <figcaption class="cap"><span>${esc(v.title || 'Видео ' + pad(k + 1))}</span><span>${v.vertical ? '9:16' : '16:9'}</span></figcaption>
+        </figure>`).join('')}
+      </div>
+      <div class="foot">
+        <button class="linkbtn" type="button" data-go="0">← Содержание</button>
+        <div class="pager">
+          <button class="navbtn" type="button" data-go="${i}" aria-label="Предыдущий раздел">‹</button>
+          <span>${pad(i + 1)} / ${pad(total)}</span>
+          <button class="navbtn" type="button" data-go="${i + 2}" aria-label="Следующий раздел" ${i + 1 === total ? 'disabled' : ''}>›</button>
+        </div>
+      </div>
+    </div></div>`);
+  });
+  book.innerHTML = sheetsHtml.join('');
+  const pages = [...book.querySelectorAll('.page')];
+
+  /* ---- sound: quiet, roomy, cinematic ---- */
+  let ac, master, wet, amb = null, muted = false;
+  try { muted = localStorage.getItem('bauntoss-muted') === '1'; } catch (e) {}
+  function audio() {
+    if (!ac) {
+      ac = new (window.AudioContext || window.webkitAudioContext)();
+      master = ac.createGain(); master.gain.value = muted ? 0 : 1; master.connect(ac.destination);
+      // small generated room reverb: everything sits in the same space
+      const len = Math.floor(ac.sampleRate * 2.6), ir = ac.createBuffer(2, len, ac.sampleRate);
+      for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 4; }
+      const conv = ac.createConvolver(); conv.buffer = ir;
+      wet = ac.createGain(); wet.gain.value = .8; wet.connect(conv); conv.connect(master);
+    }
+    if (ac.state === 'suspended') ac.resume();
+    return ac;
+  }
+  function route(node, send) { node.connect(master); if (send) { const s = ac.createGain(); s.gain.value = send; node.connect(s); s.connect(wet); } }
+  function burst({ t0 = ac.currentTime, dur, type = 'bandpass', f0, f1 = f0, q = .7, vol, env = x => (1 - x) ** 3, send = .25 }) {
+    const len = Math.max(2, Math.floor(ac.sampleRate * dur)), buf = ac.createBuffer(1, len, ac.sampleRate), ch = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * env(i / len);
+    const src = ac.createBufferSource(); src.buffer = buf;
+    const f = ac.createBiquadFilter(); f.type = type; f.Q.value = q;
+    f.frequency.setValueAtTime(f0, t0); if (f1 !== f0) f.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
+    const g = ac.createGain(); g.gain.value = vol;
+    src.connect(f); f.connect(g); route(g, send); src.start(t0);
+  }
+  function tone({ t0 = ac.currentTime, dur, f0, f1 = f0, vol, attack = .01, send = .3 }) {
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.frequency.setValueAtTime(f0, t0); if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
+    g.gain.setValueAtTime(.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + attack); g.gain.exponentialRampToValueAtTime(.0001, t0 + dur);
+    o.connect(g); route(g, send); o.start(t0); o.stop(t0 + dur + .05);
+  }
+  const swellEnv = x => Math.sin(Math.PI * x) ** 2;
+  const sfx = {
+    click() { // light switch
+      const t = ac.currentTime + .005;
+      burst({ t0: t, dur: .012, type: 'highpass', f0: 2600, vol: .5, send: .35 });
+      burst({ t0: t, dur: .03, f0: 900, q: 2, vol: .28, send: .35 });
+      burst({ t0: t + .045, dur: .008, type: 'highpass', f0: 4000, vol: .16, send: .3 });
+    },
+    thud() { // folder lands on velvet
+      const t = ac.currentTime + .005;
+      tone({ t0: t, dur: .5, f0: 92, f1: 38, vol: .5, attack: .006, send: .35 });
+      burst({ t0: t, dur: .18, type: 'lowpass', f0: 650, vol: .4, send: .35 });
+      burst({ t0: t + .01, dur: .07, f0: 2000, q: 1.2, vol: .08, send: .3 });
+    },
+    air() { // camera leans in: low breath of air
+      burst({ dur: 1.2, type: 'lowpass', f0: 160, f1: 480, vol: .3, env: swellEnv, send: .5 });
+    },
+    cover() { // the cover lifts: soft card slide, then it settles
+      const t = ac.currentTime;
+      burst({ t0: t, dur: 1, f0: 700, f1: 2200, q: .5, vol: .06, env: swellEnv, send: .5 });
+      burst({ t0: t + .95, dur: .3, type: 'lowpass', f0: 420, vol: .18, env: x => (1 - x) ** 2, send: .5 });
+    },
+    swell() { // dive into the page: slow cinematic swell
+      const t = ac.currentTime;
+      burst({ t0: t, dur: 1.8, type: 'lowpass', f0: 110, f1: 800, vol: .26, env: swellEnv, send: .6 });
+      tone({ t0: t, dur: 2.4, f0: 49, f1: 46, vol: .22, attack: 1, send: .4 });
+    },
+    page(ms = 820) { // one sheet: soft air of the turn and a light paper tick at the end
+      const t = ac.currentTime, d = ms / 1000, v = .85 + Math.random() * .3;
+      burst({ t0: t + d * .05, dur: d * .6, f0: 4800 * v, f1: 1500, q: .45, vol: .045, env: x => x < .2 ? x / .2 : (1 - x) ** 2, send: .3 });
+      burst({ t0: t + d * .72, dur: .007, type: 'highpass', f0: 3600 * v, vol: .045, send: .3 });
+    }
+  };
+  function sound(name, ...a) { if (muted) return; try { audio(); sfx[name](...a); } catch (e) {} }
+  // quiet room tone under the open folder
+  function ambience(on) {
+    try {
+      audio();
+      if (!amb && on) {
+        const t = ac.currentTime, len = ac.sampleRate * 4, buf = ac.createBuffer(2, len, ac.sampleRate);
+        for (let c = 0; c < 2; c++) { const d = buf.getChannelData(c); for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1; }
+        const src = ac.createBufferSource(); src.buffer = buf; src.loop = true;
+        const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 300; lp.Q.value = .3;
+        const lfo = ac.createOscillator(), lg = ac.createGain(); lfo.frequency.value = .06; lg.gain.value = 110; lfo.connect(lg); lg.connect(lp.frequency);
+        const g = ac.createGain(); g.gain.value = .0001;
+        src.connect(lp); lp.connect(g); route(g, .4);
+        const dg = ac.createGain(); dg.gain.value = .0001;
+        [55, 82.41].forEach(f => { const o = ac.createOscillator(); o.frequency.value = f; o.connect(dg); o.start(t); });
+        route(dg, .6);
+        src.start(t); lfo.start(t);
+        amb = { g, dg };
+      }
+      if (!amb) return;
+      const t = ac.currentTime;
+      amb.g.gain.setTargetAtTime(on ? .045 : .0001, t, on ? 1.5 : .4);
+      amb.dg.gain.setTargetAtTime(on ? .01 : .0001, t, on ? 2 : .4);
+    } catch (e) {}
+  }
+
+  /* ---- dust in the lamp light (intro only) ---- */
+  const cv = $('dust'), cx = cv.getContext('2d');
+  let motes = [], dustOn = false, raf;
+  function sizeDust() {
+    const r = devicePixelRatio || 1;
+    cv.width = innerWidth * r; cv.height = innerHeight * r; cx.setTransform(r, 0, 0, r, 0, 0);
+    motes = Array.from({ length: 46 }, () => ({ x: Math.random() * innerWidth, y: Math.random() * innerHeight, r: .4 + Math.random() * 1.4, vx: (Math.random() - .5) * .12, vy: -.04 - Math.random() * .12 }));
+  }
+  function drawDust() {
+    cx.clearRect(0, 0, innerWidth, innerHeight);
+    const lx = innerWidth / 2, ly = innerHeight * .48, R = Math.max(innerWidth, innerHeight) * .38;
+    for (const m of motes) {
+      m.x += m.vx; m.y += m.vy;
+      if (m.y < -5) { m.y = innerHeight + 5; m.x = Math.random() * innerWidth; }
+      const a = Math.max(0, 1 - Math.hypot(m.x - lx, m.y - ly) / R) * .55;
+      if (!a) continue;
+      cx.globalAlpha = a; cx.fillStyle = '#F3E9DC'; cx.beginPath(); cx.arc(m.x, m.y, m.r, 0, Math.PI * 2); cx.fill();
+    }
+    if (dustOn) raf = requestAnimationFrame(drawDust);
+  }
+  sizeDust(); addEventListener('resize', sizeDust);
+
+  /* ---- intro timeline ---- */
+  const scene = $('scene'), drop = $('drop'), folder = $('folder'), presents = $('presents'), hint = $('hint');
+  const reader = $('reader'), melody = $('melody'), mute = $('mute'), gate = $('gate');
+  let timers = [], state = 'gate';
+  const at = (ms, fn) => timers.push(setTimeout(fn, reduce ? Math.min(ms, 50) : ms));
+
+  const fine = matchMedia('(pointer: fine)').matches;
+  scene.addEventListener('pointermove', e => {
+    if (!fine || reduce || state !== 'ready') return;
+    const r = drop.getBoundingClientRect();
+    folder.style.setProperty('--ry', (((e.clientX - (r.left + r.width / 2)) / innerWidth) * 14).toFixed(2) + 'deg');
+    folder.style.setProperty('--rx', (-((e.clientY - (r.top + r.height / 2)) / innerHeight) * 14).toFixed(2) + 'deg');
+  });
+
+  function playIntro() {
+    timers.forEach(clearTimeout); timers = [];
+    state = 'intro';
+    scene.hidden = false; scene.className = 'scene'; drop.className = 'drop';
+    reader.classList.remove('show');
+    presents.classList.remove('show'); hint.classList.remove('show');
+    folder.style.removeProperty('--rx'); folder.style.removeProperty('--ry');
+    dustOn = !reduce; cancelAnimationFrame(raf); if (dustOn) drawDust();
+    ambience(false);
+    sound('click');
+    try { melody.currentTime = 0; const p = melody.play(); if (p) p.catch(() => {}); } catch (e) {}
+    // melody is 4 s: swells 0.2–2.1 s, fades out by 3.8 s
+    at(80, () => scene.classList.add('lamp-on'));
+    at(600, () => presents.classList.add('show'));
+    at(2500, () => drop.classList.add('falling'));
+    at(3450, () => sound('thud'));
+    at(3900, () => { drop.classList.add('landed'); state = 'ready'; hint.classList.add('show'); });
+  }
+
+  function openFolder() {
+    if (state !== 'ready') return;
+    state = 'opening';
+    hint.classList.remove('show');
+    folder.style.setProperty('--rx', '0deg'); folder.style.setProperty('--ry', '0deg');
+    // zoom so the inner sheet roughly fills the reader's page
+    const r = drop.getBoundingClientRect();
+    const target = bookBox.getBoundingClientRect();
+    const k = Math.min(target.width / r.width, target.height / r.height) || 1.8;
+    scene.style.setProperty('--dive', (k * 1.08).toFixed(3));
+    scene.classList.add('is-near');
+    sound('air');
+    at(450, () => { scene.classList.add('is-open'); sound('cover'); });
+    at(1650, () => { scene.classList.add('is-dive'); sound('swell'); });
+    at(2550, () => { goTo(0, true); reader.classList.add('show'); });
+    at(2900, () => ambience(true));
+    at(3300, () => { scene.hidden = true; dustOn = false; state = 'reading'; pages[0].querySelector('.toc button')?.focus({ preventScroll: true }); });
+  }
+
+  scene.addEventListener('click', openFolder);
+  scene.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFolder(); } });
+
+  function applyMute() {
+    melody.muted = muted;
+    if (master) master.gain.setTargetAtTime(muted ? 0 : 1, ac.currentTime, .05);
+    mute.textContent = muted ? 'Звук: выкл' : 'Звук: вкл';
+    mute.setAttribute('aria-pressed', String(muted));
+  }
+  applyMute();
+  mute.addEventListener('click', () => { muted = !muted; applyMute(); try { localStorage.setItem('bauntoss-muted', muted ? '1' : '0'); } catch (e) {} });
+  gate.addEventListener('click', () => {
+    if (gate.classList.contains('gone')) return;
+    gate.classList.add('gone'); mute.hidden = false;
+    playIntro();
+    setTimeout(() => { gate.hidden = true; scene.focus({ preventScroll: true }); }, 300);
+  });
+
+  /* ---- page turning: real paper curl (page-flip library) ---- */
+  const bookBox = $('bookBox');
+  const FLIP_ONE = reduce ? 150 : 850, FLIP_MANY = reduce ? 150 : 560;
+  let pf = null, queue = 0, dir = 1, cur = 0;
+  function focusPage() {
+    const p = pages[cur]; if (!p) return;
+    const paper = p.querySelector('.paper'); if (paper) paper.scrollTop = 0;
+    const h = p.querySelector('h2'); if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
+  }
+  function initBook() {
+    if (!window.St || !St.PageFlip) { // library missing: plain page switching
+      book.classList.add('no-flip'); pages.forEach((el, i) => el.classList.toggle('current', i === 0)); return;
+    }
+    const r = bookBox.getBoundingClientRect();
+    pf = new St.PageFlip(book, {
+      width: Math.round(r.width), height: Math.round(r.height), size: 'fixed',
+      usePortrait: true, autoSize: false, showCover: false,
+      drawShadow: true, maxShadowOpacity: .45, flippingTime: FLIP_ONE,
+      mobileScrollSupport: true, clickEventForward: true, useMouseEvents: true,
+      swipeDistance: 40, showPageCorners: false, disableFlipByClick: true, startZIndex: 1
+    });
+    pf.loadFromHTML(pages);
+    pf.on('changeState', e => {
+      if (e.data === 'flipping') sound('page', pf.getSettings().flippingTime);
+      if (e.data === 'read') {
+        cur = pf.getCurrentPageIndex();
+        if (queue > 0) { queue--; setTimeout(turn, 20); }
+        else { pf.getSettings().flippingTime = FLIP_ONE; focusPage(); }
+      }
+    });
+    addEventListener('resize', () => {
+      const b = bookBox.getBoundingClientRect(), st = pf.getSettings();
+      st.width = Math.round(b.width); st.height = Math.round(b.height);
+      book.style.minWidth = st.width + 'px'; book.style.minHeight = st.height + 'px';
+      pf.update();
+    });
+  }
+  function goTo(t, instant) {
+    t = Math.max(0, Math.min(pages.length - 1, t));
+    if (!pf) { cur = t; pages.forEach((el, i) => el.classList.toggle('current', i === t)); if (!instant) focusPage(); return; }
+    if (instant) { queue = 0; pf.turnToPage(t); cur = t; return; }
+    cur = pf.getCurrentPageIndex();
+    if (t === cur || !['read', 'fold_corner'].includes(pf.getState())) return;
+    const n = Math.abs(t - cur);
+    dir = t > cur ? 1 : -1; queue = n - 1;
+    pf.getSettings().flippingTime = n > 1 ? FLIP_MANY : FLIP_ONE;
+    turn();
+  }
+  // the library refuses programmatic backward turns in single-page mode while click-flipping is off,
+  // so lift that guard just for the call
+  function turn() {
+    const st = pf.getSettings();
+    st.disableFlipByClick = false;
+    try { dir > 0 ? pf.flipNext('top') : pf.flipPrev('top'); } finally { st.disableFlipByClick = true; }
+  }
+  initBook();
+
+  // fat titles: shrink a heading until its longest word fits the sheet
+  function fitTitles() {
+    const ctx = document.createElement('canvas').getContext('2d');
+    ctx.font = '400 100px "Dela Gothic One"';
+    const bw = bookBox.getBoundingClientRect().width;
+    const avail = bw - 2 * Math.min(44, Math.max(18, bw * .06)) - 6;
+    book.querySelectorAll('.paper h2').forEach(h => {
+      const words = h.innerHTML.replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]+>/g, '').toUpperCase().split(/\s+/).filter(Boolean);
+      const em = Math.max(...words.map(w => ctx.measureText(w).width / 100)) * 1.02;
+      h.style.fontSize = '';
+      const cssMax = parseFloat(getComputedStyle(h).fontSize);
+      h.style.fontSize = Math.min(cssMax, avail / em).toFixed(1) + 'px';
+    });
+  }
+  fitTitles();
+  if (document.fonts) document.fonts.ready.then(fitTitles);
+  addEventListener('resize', fitTitles);
+
+  book.addEventListener('click', e => {
+    const go = e.target.closest('[data-go]');
+    if (go && !go.disabled) { goTo(+go.dataset.go); return; }
+    const ph = e.target.closest('.photo');
+    if (ph) { openPlayer(sections[+ph.dataset.s].videos[+ph.dataset.v], ph); return; }
+    if (e.target.closest('[data-replay]')) { try { melody.pause(); } catch (err) {} playIntro(); }
+  });
+  addEventListener('keydown', e => {
+    if (player.classList.contains('show')) { if (e.key === 'Escape') closePlayer(); return; }
+    if (state !== 'reading') return;
+    if (e.key === 'ArrowRight') goTo(cur + 1);
+    if (e.key === 'ArrowLeft') goTo(cur - 1);
+  });
+
+  /* ---- video player, inside the page ---- */
+  const player = $('player'), frame = $('frame');
+  let lastPhoto = null;
+  function openPlayer(v, from) {
+    lastPhoto = from;
+    try { melody.pause(); } catch (e) {}
+    ambience(false);
+    frame.className = 'frame ' + (v.vertical ? 'v' : 'h');
+    frame.innerHTML = `
+      <div class="blocked" hidden><p>Превью Claude не пускает плеер YouTube. На опубликованном сайте видео играет прямо в этом окне.</p></div>
+      <iframe src="https://www.youtube-nocookie.com/embed/${v.id}?autoplay=1&playsinline=1&rel=0&modestbranding=1"
+        title="Видео" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+    player.classList.add('show');
+    $('closePlayer').focus({ preventScroll: true });
+  }
+  function closePlayer() {
+    player.classList.remove('show');
+    ambience(true);
+    setTimeout(() => { frame.innerHTML = ''; }, 350);
+    lastPhoto?.focus({ preventScroll: true });
+  }
+  // if the page forbids embedded players (as the preview does), show the fallback link
+  document.addEventListener('securitypolicyviolation', e => {
+    if (/youtube/.test(e.blockedURI || '') && player.classList.contains('show')) {
+      const b = frame.querySelector('.blocked'), f = frame.querySelector('iframe');
+      if (b) b.hidden = false; if (f) f.remove();
+    }
+  });
+  $('closePlayer').addEventListener('click', closePlayer);
+  player.addEventListener('click', e => { if (e.target === player) closePlayer(); });
+})();
+</script>
+
+</html>
