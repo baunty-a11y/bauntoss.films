@@ -10,6 +10,10 @@
 - Подпись: `{ url: '...', title: 'Название' }`.
 - Своя обложка: положи картинку в `covers/` и укажи `{ url: '...', cover: 'covers/файл.jpg' }`.
 
+## Как добавить кадр в «Цветокоррекцию»
+Положи два файла в `grading/` (S-Log и финальный цвет) и добавь строку в раздел «Цветокоррекция»:
+`{ log: 'grading/03-log.webp', color: 'grading/03-color.webp' },`
+
 ## Файлы
 - `assets/intro.mp3` — мелодия интро.
 - `vendor/page-flip.browser.js` — библиотека перелистывания (MIT, см. `vendor/page-flip.LICENSE`).
