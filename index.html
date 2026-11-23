@@ -500,7 +500,7 @@ body::after { /* print grain over everything */
    Обычное видео, снятое вертикально: { url: '...', vertical: true }.
    Подпись к видео: { url: '...', title: 'Название' }.
    Своя обложка: { url: '...', cover: 'covers/имя-файла.jpg' } (файл кладётся в папку covers).
-   Цветокоррекция: пара кадров { log: 'grading/03-log.webp', color: 'grading/03-color.webp' }
+   Цветокоррекция: пара кадров { log: 'grading/05-log.webp', color: 'grading/05-color.webp' }
    (файлы кладутся в папку grading, слева S-Log, справа финальный цвет).
    ========================================================= */
 const SECTIONS = [
@@ -532,6 +532,8 @@ const SECTIONS = [
   { title: 'Цветокоррекция', grading: [
     { log: 'grading/01-log.webp', color: 'grading/01-color.webp' },
     { log: 'grading/02-log.webp', color: 'grading/02-color.webp' },
+    { log: 'grading/03-log.webp', color: 'grading/03-color.webp' },
+    { log: 'grading/04-log.webp', color: 'grading/04-color.webp' },
   ]},
 ];
 
