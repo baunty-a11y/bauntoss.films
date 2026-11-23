@@ -12,7 +12,7 @@
 
 ## Как добавить кадр в «Цветокоррекцию»
 Положи два файла в `grading/` (S-Log и финальный цвет) и добавь строку в раздел «Цветокоррекция»:
-`{ log: 'grading/05-log.webp', color: 'grading/05-color.webp' },`
+`{ log: 'grading/07-log.webp', color: 'grading/07-color.webp' },`
 
 ## Файлы
 - `assets/intro.mp3` — мелодия интро.

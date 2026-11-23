@@ -399,6 +399,7 @@ body::after { /* print grain over everything */
 /* colour grading: S-Log | Color divider */
 .grades { display: grid; gap: 2.4rem; padding: .6rem 8px 0; justify-items: center; }
 .ba { width: min(100%, 420px); display: grid; gap: .8rem; }
+.ba.wide { width: 100%; max-width: 760px; }
 .ba-frame {
   position: relative; overflow: hidden; border-radius: 3px; background: #000;
   box-shadow: 0 0 0 7px var(--paper), 7px 11px 0 7px rgba(18, 6, 7, .35);
@@ -422,6 +423,7 @@ body::after { /* print grain over everything */
 }
 @media (min-width: 900px) and (min-aspect-ratio: 1/1) {
   .grades { grid-template-columns: repeat(auto-fit, minmax(260px, 340px)); justify-content: center; column-gap: 2.6rem; }
+  .ba.wide { grid-column: 1 / -1; justify-self: center; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -500,7 +502,7 @@ body::after { /* print grain over everything */
    Обычное видео, снятое вертикально: { url: '...', vertical: true }.
    Подпись к видео: { url: '...', title: 'Название' }.
    Своя обложка: { url: '...', cover: 'covers/имя-файла.jpg' } (файл кладётся в папку covers).
-   Цветокоррекция: пара кадров { log: 'grading/05-log.webp', color: 'grading/05-color.webp' }
+   Цветокоррекция: пара кадров { log: 'grading/07-log.webp', color: 'grading/07-color.webp' }
    (файлы кладутся в папку grading, слева S-Log, справа финальный цвет).
    ========================================================= */
 const SECTIONS = [
@@ -534,6 +536,8 @@ const SECTIONS = [
     { log: 'grading/02-log.webp', color: 'grading/02-color.webp' },
     { log: 'grading/03-log.webp', color: 'grading/03-color.webp' },
     { log: 'grading/04-log.webp', color: 'grading/04-color.webp' },
+    { log: 'grading/05-log.webp', color: 'grading/05-color.webp' },
+    { log: 'grading/06-log.webp', color: 'grading/06-color.webp' },
   ]},
 ];
 
@@ -599,7 +603,7 @@ const SECTIONS = [
     return `<div class="grades">${s.grading.map((g, k) => `
       <figure class="ba" style="margin:0">
         <div class="ba-frame" role="slider" tabindex="0" aria-label="До и после цветокоррекции, кадр ${k + 1}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" style="--pos:50%">
-          <img class="ba-log" src="${esc(g.log)}" alt="Кадр ${k + 1} в S-Log" loading="lazy" draggable="false">
+          <img class="ba-log" src="${esc(g.log)}" alt="Кадр ${k + 1} в S-Log" loading="eager" draggable="false">
           <img class="ba-color" src="${esc(g.color)}" alt="Кадр ${k + 1} после цветокоррекции" loading="lazy" draggable="false">
           <span class="ba-tag l">S-Log</span><span class="ba-tag r">Color</span>
           <span class="ba-line" aria-hidden="true"><i></i></span>
@@ -883,6 +887,10 @@ const SECTIONS = [
   /* ---- before/after sliders (S-Log | Color) ---- */
   function setPos(f, p) { p = Math.max(0, Math.min(100, p)); f.style.setProperty('--pos', p + '%'); f.setAttribute('aria-valuenow', String(Math.round(p))); }
   book.querySelectorAll('.ba-frame').forEach(f => {
+    // horizontal frames get a wider slot
+    const base = f.querySelector('.ba-log');
+    const mark = () => { if (base.naturalWidth > base.naturalHeight) f.closest('.ba').classList.add('wide'); };
+    if (base.complete) mark(); else base.addEventListener('load', mark);
     // a drag on the photo moves the divider, never turns the page
     ['mousedown', 'touchstart'].forEach(t => f.addEventListener(t, e => e.stopPropagation()));
     const pct = e => { const r = f.getBoundingClientRect(); return (e.clientX - r.left) / r.width * 100; };
